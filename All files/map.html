@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script>L_PREFER_CANVAS=false; L_NO_TOUCH=false; L_DISABLE_3D=false;</script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.2.0/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.2.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawgit.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    
+    <style>#map_69c84dabc4f14135af71c050dba5f4c7 {
+        position: relative;
+        width: 100.0%;
+        height: 100.0%;
+        left: 0.0%;
+        top: 0.0%;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+    <script src="https://rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
+    <script src="https://rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css"/>
+    <link rel="stylesheet" href="http://apps.socib.es/Leaflet.TimeDimension/dist/leaflet.timedimension.control.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+</head>
+<body>    
+    
+    <div class="folium-map" id="map_69c84dabc4f14135af71c050dba5f4c7" ></div>
+</body>
+<script>    
+    
+    
+        var bounds = null;
+    
+
+    var map_69c84dabc4f14135af71c050dba5f4c7 = L.map(
+        'map_69c84dabc4f14135af71c050dba5f4c7', {
+        center: [54.78, 32.04],
+        zoom: 6,
+        maxBounds: bounds,
+        layers: [],
+        worldCopyJump: false,
+        crs: L.CRS.EPSG3857,
+        zoomControl: true,
+        });
+
+    
+    
+    var tile_layer_bcbb927af36248f8b12962d5c083cb62 = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+        "attribution": null, 
+        "detectRetina": false, 
+        "maxNativeZoom": 18, 
+        "maxZoom": 18, 
+        "minZoom": 0, 
+        "noWrap": false, 
+        "subdomains": "abc"
+}).addTo(map_69c84dabc4f14135af71c050dba5f4c7);
+    
+            L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({
+                _getDisplayDateFormat: function(date){
+                    var newdate = new moment(date);
+                    return newdate.format("YYYY-MM-DD HH:mm:ss");
+                },
+                _update: function() {
+                  if (!this._timeDimension) {
+                      return; 
+                  }
+                  var time = this._timeDimension.getCurrentTime();
+                    var date = new Date(time);
+                      if (this._displayDate) {
+                        L.DomUtil.removeClass(this._displayDate, 'loading');
+                        this._displayDate.innerHTML = this._getDisplayDateFormat(date);
+                    }
+                    if (this._sliderTime && !this._slidingTimeSlider) {
+                        this._sliderTime.setValue(this._timeDimension.getCurrentTimeIndex());
+                    }
+            }
+            });
+            L.TimeDimension.Layer.GeoJsonCustom = L.TimeDimension.Layer.GeoJson.extend({
+    _getFeatureTimes: function(feature) {
+        if (!feature.featureTimes) {
+            if (!feature.properties) {
+                feature.featureTimes = [];
+            } else if (feature.properties.hasOwnProperty('coordTimes')) {
+                feature.featureTimes = feature.properties.coordTimes;
+            } else if (feature.properties.hasOwnProperty('times')) {
+                feature.featureTimes = feature.properties.times;
+            } else if (feature.properties.hasOwnProperty('linestringTimestamps')) {
+                feature.featureTimes = feature.properties.linestringTimestamps;
+            } else if (feature.properties.hasOwnProperty('time')) {
+                feature.featureTimes = [feature.properties.time];
+            } else {
+                feature.featureTimes = [];
+            }
+            // String dates to ms
+            for (var i = 0, l = feature.featureTimes.length; i < l; i++) {
+                var time = feature.featureTimes[i];
+                if (typeof time == 'string' || time instanceof String) {
+                    time = Date.parse(time.trim());
+                    feature.featureTimes[i] = time;
+                    console.log(time);
+                }
+            }
+        }
+        return feature.featureTimes;
+    },
+    _getFeatureBetweenDates: function(feature, minTime, maxTime) {
+        if (minTime == 0) {
+            minTime = -99999999999999;
+        }
+        var featureTimes = this._getFeatureTimes(feature);
+        if (featureTimes.length == 0) {
+            return feature;
+        }
+
+        var index_min = null,
+            index_max = null,
+            l = featureTimes.length;
+
+        if (featureTimes[0] > maxTime || featureTimes[l - 1] < minTime) {
+            return null;
+        }
+
+        if (featureTimes[l - 1] > minTime) {
+            for (var i = 0; i < l; i++) {
+                if (index_min === null && featureTimes[i] > minTime) {
+                    // set index_min the first time that current time is greater the minTime
+                    index_min = i;
+                }
+                if (featureTimes[i] > maxTime) {
+                    index_max = i;
+                    break;
+                }
+            }
+        }
+        if (index_min === null) {
+            index_min = 0;
+        }
+        if (index_max === null) {
+            index_max = l;
+        }
+        var new_coordinates = [];
+        if (feature.geometry.coordinates[0].length) {
+            new_coordinates = feature.geometry.coordinates.slice(index_min, index_max);
+        } else {
+            new_coordinates = feature.geometry.coordinates;
+        }
+        return {
+            type: 'Feature',
+            properties: feature.properties,
+            geometry: {
+                type: feature.geometry.type,
+                coordinates: new_coordinates
+            }
+        };
+    }
+
+            });
+            map_69c84dabc4f14135af71c050dba5f4c7.timeDimension = L.timeDimension({period:"P1D"});
+            var timeDimensionControl = new L.Control.TimeDimensionCustom({
+  "autoPlay": true, 
+  "loopButton": false, 
+  "maxSpeed": 10, 
+  "minSpeed": 0.1, 
+  "playerOptions": {
+    "loop": true, 
+    "startOver": true, 
+    "transitionTime": 200
+  }, 
+  "position": "bottomleft", 
+  "timeSliderDragUpdate": false
+});
+            map_69c84dabc4f14135af71c050dba5f4c7.addControl(this.timeDimensionControl);
+
+            var geoJsonLayer = L.geoJson({"type": "FeatureCollection", "features": [{"geometry": {"type": "Point", "coordinates": [28.73737024, 53.64821686]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-15", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.721273699999998, 53.32616809]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-10", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.73384098, 53.3952938]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-24", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.80311335, 53.38031136]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-01", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.57306779, 53.55576719]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-20", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.82447995, 53.37219846]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-27", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.72271229, 53.32501362]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-04", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.7926679, 52.89678199]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-14", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.75313392, 53.47663613]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-22", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.80936994, 53.36817265]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-30", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.69922907, 53.32799081]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-06", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.73166967, 53.15506138]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-12", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.8038435, 53.26853589]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-12", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.7315158, 53.32289749]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-08-02", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.07701503, 53.54467272]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-19", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.82545657, 53.36562869]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-26", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [30.80012234, 53.36628447]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-29", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [28.34113426, 53.55299561]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-13", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [27.61947281, 53.41297767]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-11", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [27.88188809, 53.47933573]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-12", "icon": "marker"}}, {"geometry": {"type": "Point", "coordinates": [29.15051932, 53.68405519]}, "type": "Feature", "properties": {"iconstyle": {"iconSize": [30, 30], "iconUrl": "https://github.com/rkalyanapurdue/smolensk/raw/master/tank.png"}, "time": "1941-07-16", "icon": "marker"}}]}, {
+                    pointToLayer: function (feature, latLng) {
+                        if (feature.properties.icon == 'marker') {
+                            if(feature.properties.iconstyle){
+                                return new L.Marker(latLng, {
+                                    icon: L.icon(feature.properties.iconstyle)});
+                            }
+                            //else
+                            return new L.Marker(latLng);
+                        }
+                        if (feature.properties.icon == 'circle') {
+                            if (feature.properties.iconstyle) {
+                                return new L.circleMarker(latLng, feature.properties.iconstyle)
+                                };
+                            //else
+                            return new L.circleMarker(latLng);
+                        }
+                        //else
+
+                        return new L.Marker(latLng);
+                    },
+                    style: function (feature) {
+                        return feature.properties.style;
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties.popup) {
+                        layer.bindPopup(feature.properties.popup);
+                        }
+                    }
+                })
+
+            var timestamped_geo_json_ffff45bbba2d4b86990c42e11f080a68 = new L.TimeDimension.Layer.GeoJsonCustom(geoJsonLayer,
+                {updateTimeDimension: true,
+                 addlastPoint: true,
+                 duration: undefined,
+                }).addTo(map_69c84dabc4f14135af71c050dba5f4c7);
+        
+</script>
